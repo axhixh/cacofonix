@@ -22,6 +22,8 @@ The project contains two examples:
 ## Querying
 Cacofonix provides very basic querying of time series using a HTTP interface.
 
+HTTP GET to ```http://cacofonix:9002/api/metrics/``` returns a list of metrics stored in the system.
+
 You can do a HTTP GET to ```http://cacofonix:9002/api/metrics/metric.name?start=unix.timestamp&end=unix.timestamp```
 
 This returns the values of the time series with name 'metric.name' between start and end timestamps. The values are returned as tab separated values.
