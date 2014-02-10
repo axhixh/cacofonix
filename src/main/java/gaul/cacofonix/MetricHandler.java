@@ -2,6 +2,7 @@
 package gaul.cacofonix;
 
 import gaul.cacofonix.store.Datastore;
+import gaul.cacofonix.store.DatastoreException;
 
 /**
  *
@@ -23,7 +24,7 @@ public class MetricHandler implements PacketHandler {
                 long timestamp = Long.parseLong(split[1]);
                 double value = Double.parseDouble(split[2]);
                 store.save(metricName, new DataPoint(timestamp, value));
-            } catch (NumberFormatException err) {
+            } catch (NumberFormatException | DatastoreException ignored) {
                 
             }
         }

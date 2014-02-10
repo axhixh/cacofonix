@@ -55,5 +55,8 @@ public class MemoryDatastore implements Datastore {
         return filtered;
     }
     
-    
+    @Override
+    public void close() {
+        // do nothing
+    }
 }
