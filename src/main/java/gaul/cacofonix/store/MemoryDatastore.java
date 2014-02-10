@@ -14,6 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MemoryDatastore implements Datastore {
 
     private final Map<String, List<DataPoint>> store = new ConcurrentHashMap<>();
+
+    @Override
+    public List<String> getMetrics() {
+        List<String> metrics = new ArrayList<>(store.keySet());
+        Collections.sort(metrics);
+        return metrics;
+    }
     
     @Override
     public void save(String metric, DataPoint dp) {

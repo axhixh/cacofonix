@@ -8,7 +8,11 @@ import java.util.List;
  * @author ashish
  */
 public class H2Datastore implements Datastore {
-    
+
+    @Override
+    public List<String> getMetrics() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     @Override
     public void save(String metric, DataPoint dp) {
         throw new UnsupportedOperationException("Not supported yet."); 

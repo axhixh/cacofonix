@@ -45,21 +45,40 @@ public class Reporter {
         @Override
         public void handle(HttpExchange he) throws IOException {
             URI request = he.getRequestURI();
-            String metricName = request.getPath().substring(METRICS_PATH.length());
+            String path = request.getPath();
+            if (METRICS_PATH.equalsIgnoreCase(path)){
+                getMetrics(he);
+            } else {
+                getDataPoints(path, request, he);
+            }
+        }
+
+        private void getMetrics(HttpExchange he) throws IOException {
+            he.sendResponseHeaders(200, 0);
+            try(OutputStream os = he.getResponseBody()) {
+                for (String metric: store.getMetrics()) {
+                    String line = metric + "\n";
+                    os.write(line.getBytes());
+                }
+            }
+        }
+
+        private void getDataPoints(String path, URI request, HttpExchange he) throws IOException {
+            String metricName = path.substring(METRICS_PATH.length());
             String query = request.getQuery();
             long start = get("start", query);
             long end = get("end", query);
             List<DataPoint> points = store.query(metricName, start, end);
             Headers responseHeaders = he.getResponseHeaders();
-            responseHeaders.set("Content-Type", "text/tab-separated-values");
             responseHeaders.set("X-Metric-Name", metricName);
-            //responseHeaders.set("Content-Disposition", 
+            //responseHeaders.set("Content-Type", "text/tab-separated-values");
+            //responseHeaders.set("Content-Disposition",
             //        "attachment; filename=" + metricName + ".tsv");
             he.sendResponseHeaders(200, 0); // use chunked
             try(OutputStream os = he.getResponseBody()) {
                 os.write("time\tvalue\n".getBytes());
                 for (DataPoint point : points) {
-                    String line = point.getTimestamp() + "\t" + 
+                    String line = point.getTimestamp() + "\t" +
                             point.getValue() + "\n";
                     os.write(line.getBytes());
                 }
