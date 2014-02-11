@@ -23,17 +23,19 @@ import org.apache.logging.log4j.Logger;
 public class Reporter {
     private static final Logger log = LogManager.getLogger("cacofonix.reporter");
     private static final String METRICS_PATH = "/api/metrics/";
+    private final String addr;
     private final int port;
     private final Datastore store;
     private HttpServer server;
 
-    public Reporter(int port, Datastore store) {
+    public Reporter(String addr, int port, Datastore store) {
+        this.addr = addr;
         this.port = port;
         this.store = store;
     }
 
     public void start() throws IOException {
-        server = create(new InetSocketAddress(port), 5);
+        server = create(new InetSocketAddress(addr, port), 5);
         server.createContext(METRICS_PATH, new QueryHandler());
         server.setExecutor(null); // creates a default executor
         server.start();

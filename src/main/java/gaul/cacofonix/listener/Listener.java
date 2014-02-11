@@ -4,7 +4,10 @@ import gaul.cacofonix.listener.PacketHandler;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,23 +20,26 @@ import org.apache.logging.log4j.Logger;
  */
 public class Listener {
     private static final Logger log = LogManager.getLogger("cacofonix.listener");
-    
+
+    private final String addr;
     private final int port;
     private final PacketHandler handler;
     private final AtomicBoolean running = new AtomicBoolean(false);
     private ExecutorService executor;
     private DatagramSocket socket;
 
-    public Listener(int port, PacketHandler handler) {
+    public Listener(String addr, int port, PacketHandler handler) {
+        this.addr = addr;
         this.port = port;
         this.handler = handler;
     }
 
-    public void start() throws SocketException {
+    public void start() throws SocketException, UnknownHostException {
         if (running.getAndSet(true)) {
             return;
         }
-        socket = new DatagramSocket(port);
+        InetAddress inetAddr = InetAddress.getByName(addr);
+        socket = new DatagramSocket(port, inetAddr);
         Worker worker = new Worker();
         executor = Executors.newSingleThreadExecutor();
         executor.submit(worker);

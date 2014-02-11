@@ -24,16 +24,18 @@ public class Cacofonix {
                 System.getenv());
         final Datastore store = config.useDb() ? 
                 new H2Datastore(config.h2Url()) : new MemoryDatastore();
-        
+
+        String listenerAddr = config.listenerAddr();
         int listenerPort = config.listenerPort();
-        final Listener listener = new Listener(listenerPort, new MetricHandler(store));
+        final Listener listener = new Listener(listenerAddr, listenerPort, new MetricHandler(store));
         listener.start();
-        log.info("Started listener at port " + listenerPort);
-        
-        int httpPort = config.httpPort();
-        final Reporter reporter = new Reporter(httpPort, store);
+        log.info("Started listener at {}:{} ", listenerAddr, listenerPort);
+
+        String reporterAddr = config.reporterAddr();
+        int reporterPort = config.reporterPort();
+        final Reporter reporter = new Reporter(reporterAddr, reporterPort, store);
         reporter.start();
-        log.info("Started reporter at port " + httpPort);
+        log.info("Started reporter at {}:{} ", reporterAddr, reporterPort);
         
         Runnable hook = new Runnable() {
           @Override
@@ -56,6 +58,6 @@ public class Cacofonix {
             }
         }
         reporter.stop();
-        log.info("Stopped Cacofonix");
+        log.info("Stopping Cacofonix");
     }
 }
