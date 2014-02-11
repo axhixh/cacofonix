@@ -6,13 +6,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author ashish
  */
 public class MemoryDatastore implements Datastore {
-
+    private static final Logger log = LogManager.getLogger("cacofonix.datastore");
     private final Map<String, List<DataPoint>> store = new ConcurrentHashMap<>();
 
     @Override
@@ -24,7 +26,7 @@ public class MemoryDatastore implements Datastore {
     
     @Override
     public void save(String metric, DataPoint dp) {
-        System.out.println(metric + '@' + dp.getTimestamp() + 
+        log.info(metric + '@' + dp.getTimestamp() + 
                         ": " + dp.getValue()); 
         List<DataPoint> points;
         if (store.containsKey(metric)) {

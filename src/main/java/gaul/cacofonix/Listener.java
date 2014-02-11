@@ -7,13 +7,16 @@ import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author ashish
  */
 public class Listener {
-
+    private static final Logger log = LogManager.getLogger("cacofonix.listener");
+    
     private final int port;
     private final PacketHandler handler;
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -66,7 +69,8 @@ public class Listener {
                     } else {
                         handler.handle(line);
                     }
-                } catch (IOException ignored) {
+                } catch (IOException err) {
+                    log.error("Unable to receive data point", err);
                 }
             }
         }

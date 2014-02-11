@@ -13,13 +13,15 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author ashish
  */
 public class Reporter {
-
+    private static final Logger log = LogManager.getLogger("cacofonix.reporter");
     private static final String METRICS_PATH = "/api/metrics/";
     private final int port;
     private final Datastore store;
@@ -42,10 +44,11 @@ public class Reporter {
     }
 
     private class QueryHandler implements HttpHandler {
-
+        
         @Override
         public void handle(HttpExchange he) throws IOException {
             URI request = he.getRequestURI();
+            log.debug("Reporter query at " + request.toString());
             String path = request.getPath();
             if (METRICS_PATH.equalsIgnoreCase(path)) {
                 getMetrics(he);
@@ -55,6 +58,7 @@ public class Reporter {
         }
 
         private void getMetrics(HttpExchange he) throws IOException {
+            log.debug("Returning metrics list");
             try {
                 List<String> metrics = store.getMetrics();
                 he.sendResponseHeaders(200, 0);
@@ -70,6 +74,7 @@ public class Reporter {
         }
 
         private void getDataPoints(String path, URI request, HttpExchange he) throws IOException {
+            log.debug("Returning data points");
             String metricName = path.substring(METRICS_PATH.length());
             String query = request.getQuery();
             long start = get("start", query);

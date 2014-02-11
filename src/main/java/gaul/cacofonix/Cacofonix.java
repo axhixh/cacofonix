@@ -6,12 +6,15 @@ import gaul.cacofonix.store.MemoryDatastore;
 import gaul.cacofonix.store.Datastore;
 import gaul.cacofonix.store.H2Datastore;
 import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class Cacofonix {
-
+    private static final Logger log = LogManager.getLogger("cacofonix");
+    
     public static void main(String[] args) throws IOException {
-        System.out.println("Cacofonix");
+        log.info("Cacofonix");
 
         String path = System.getProperty("user.home");
         final Datastore store = new H2Datastore(path); //new MemoryDatastore();
@@ -19,16 +22,17 @@ public class Cacofonix {
         int listenerPort = 4005;
         final Listener listener = new Listener(listenerPort, new MetricHandler(store));
         listener.start();
-        System.out.println("Started listener at port " + listenerPort);
+        log.info("Started listener at port " + listenerPort);
         
         int httpPort = 9002;
         final Reporter reporter = new Reporter(httpPort, store);
         reporter.start();
-        System.out.println("Started reporter at port " + httpPort);
+        log.info("Started reporter at port " + httpPort);
         
         Runnable hook = new Runnable() {
           @Override
           public void run() {
+              log.info("Shutting down");
               listener.stop();
               reporter.stop();
               store.close();
@@ -46,6 +50,6 @@ public class Cacofonix {
             }
         }
         reporter.stop();
-        System.out.println("Stopped Cacofonix");
+        log.info("Stopped Cacofonix");
     }
 }
