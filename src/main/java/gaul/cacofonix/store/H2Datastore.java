@@ -15,6 +15,8 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -22,17 +24,19 @@ import java.util.List;
  * @author ashish
  */
 public class H2Datastore implements Datastore {
+    private static final Logger logger = LogManager.getLogger("cacofonix.datastore");
     private final Connection conn;
 
-    public H2Datastore(String dbPath) {
+    public H2Datastore(String dbUrl) {
         org.h2.Driver.load();
         try {
-            conn = DriverManager.getConnection("jdbc:h2:" + dbPath + "/cacofonix");
+            conn = DriverManager.getConnection(dbUrl);
             conn.setAutoCommit(true);
             init();
         } catch (IOException | SQLException err) {
-            throw new RuntimeException("Error setting up datastore.", err);
+            throw new RuntimeException("Error setting up datastore at " + dbUrl, err);
         }
+        logger.info("Started data store at " + dbUrl);
     }
 
     private void init() throws SQLException, IOException {

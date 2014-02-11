@@ -8,6 +8,7 @@ import gaul.cacofonix.store.MemoryDatastore;
 import gaul.cacofonix.store.Datastore;
 import gaul.cacofonix.store.H2Datastore;
 import java.io.IOException;
+import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,15 +19,18 @@ public class Cacofonix {
     public static void main(String[] args) throws IOException {
         log.info("Cacofonix");
 
-        String path = System.getProperty("user.home");
-        final Datastore store = new H2Datastore(path); //new MemoryDatastore();
+        ServerConfig config = ConfigFactory.create(ServerConfig.class,
+                System.getProperties(),
+                System.getenv());
+        final Datastore store = config.useDb() ? 
+                new H2Datastore(config.h2Url()) : new MemoryDatastore();
         
-        int listenerPort = 4005;
+        int listenerPort = config.listenerPort();
         final Listener listener = new Listener(listenerPort, new MetricHandler(store));
         listener.start();
         log.info("Started listener at port " + listenerPort);
         
-        int httpPort = 9002;
+        int httpPort = config.httpPort();
         final Reporter reporter = new Reporter(httpPort, store);
         reporter.start();
         log.info("Started reporter at port " + httpPort);
