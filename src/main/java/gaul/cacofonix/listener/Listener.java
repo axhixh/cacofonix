@@ -1,5 +1,6 @@
-package gaul.cacofonix;
+package gaul.cacofonix.listener;
 
+import gaul.cacofonix.listener.PacketHandler;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

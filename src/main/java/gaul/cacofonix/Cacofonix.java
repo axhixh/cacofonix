@@ -1,6 +1,8 @@
 
 package gaul.cacofonix;
 
+import gaul.cacofonix.listener.Listener;
+import gaul.cacofonix.listener.MetricHandler;
 import gaul.cacofonix.reporter.Reporter;
 import gaul.cacofonix.store.MemoryDatastore;
 import gaul.cacofonix.store.Datastore;
