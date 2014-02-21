@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import static com.sun.net.httpserver.HttpServer.create;
 import gaul.cacofonix.DataPoint;
+import gaul.cacofonix.Metric;
 import gaul.cacofonix.store.Datastore;
 import gaul.cacofonix.store.DatastoreException;
 import java.io.IOException;
@@ -62,11 +63,11 @@ public class Reporter {
         private void getMetrics(HttpExchange he) throws IOException {
             log.debug("Returning metrics list");
             try {
-                List<String> metrics = store.getMetrics();
+                List<Metric> metrics = store.getMetrics();
                 he.sendResponseHeaders(200, 0);
                 try (OutputStream os = he.getResponseBody()) {
-                    for (String metric : metrics) {
-                        String line = metric + "\n";
+                    for (Metric metric : metrics) {
+                        String line = metric.getName() + "\n";
                         os.write(line.getBytes());
                     }
                 }

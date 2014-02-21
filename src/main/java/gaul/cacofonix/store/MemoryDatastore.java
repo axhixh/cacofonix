@@ -1,6 +1,7 @@
 package gaul.cacofonix.store;
 
 import gaul.cacofonix.DataPoint;
+import gaul.cacofonix.Metric;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,19 +16,20 @@ import org.apache.logging.log4j.Logger;
  */
 public class MemoryDatastore implements Datastore {
     private static final Logger log = LogManager.getLogger("cacofonix.datastore");
-    private final Map<String, List<DataPoint>> store = new ConcurrentHashMap<>();
+    private final Map<Metric, List<DataPoint>> store = new ConcurrentHashMap<>();
 
     @Override
-    public List<String> getMetrics() {
-        List<String> metrics = new ArrayList<>(store.keySet());
+    public List<Metric> getMetrics() {
+        List<Metric> metrics = new ArrayList<>(store.keySet());
         Collections.sort(metrics);
         return metrics;
     }
     
     @Override
-    public void save(String metric, DataPoint dp) {
-        log.info(metric + '@' + dp.getTimestamp() + 
+    public void save(String metricName, DataPoint dp) {
+        log.info(metricName + '@' + dp.getTimestamp() + 
                         ": " + dp.getValue()); 
+        Metric metric = new Metric(metricName, 0,0);
         List<DataPoint> points;
         if (store.containsKey(metric)) {
             points = store.get(metric);
@@ -40,7 +42,8 @@ public class MemoryDatastore implements Datastore {
     }
 
     @Override
-    public List<DataPoint> query(String metric, long start, long end) {
+    public List<DataPoint> query(String metricName, long start, long end) {
+        Metric metric = new Metric(metricName, 0, 0);
         if (!store.containsKey(metric)) {
             return Collections.emptyList();
         }

@@ -46,7 +46,7 @@ public class Cacofonix {
               store.close();
           }
         };
-        Runtime.getRuntime().addShutdownHook(new Thread(hook));
+        Runtime.getRuntime().addShutdownHook(new Thread(hook, "Shutdown Thread"));
 
         while (listener.isRunning()) {
             synchronized (listener) {

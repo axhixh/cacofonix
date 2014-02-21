@@ -2,6 +2,7 @@
 package gaul.cacofonix.store;
 
 import gaul.cacofonix.DataPoint;
+import gaul.cacofonix.Metric;
 import java.util.List;
 
 /**
@@ -9,8 +10,8 @@ import java.util.List;
  * @author ashish
  */
 public interface Datastore {
-    List<String> getMetrics() throws DatastoreException;
-    void save(String metric, DataPoint dp)  throws DatastoreException;
-    List<DataPoint> query(String metric, long start, long end)  throws DatastoreException;
+    List<Metric> getMetrics() throws DatastoreException;
+    void save(String metricName, DataPoint dp)  throws DatastoreException;
+    List<DataPoint> query(String metricName, long start, long end)  throws DatastoreException;
     void close();
 }
