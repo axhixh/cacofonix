@@ -36,12 +36,13 @@ public class H2Datastore implements Datastore {
         try {
             conn = DriverManager.getConnection(dbUrl);
             conn.setAutoCommit(true);
+            timer = new Timer("Database Cleaner", true);
             init();
         } catch (IOException | SQLException err) {
             throw new RuntimeException("Error setting up datastore at " + dbUrl, err);
         }
         logger.info("Started data store at " + dbUrl);
-        timer = new Timer("Database Cleaner", true);
+        
     }
 
     private void init() throws SQLException, IOException {
