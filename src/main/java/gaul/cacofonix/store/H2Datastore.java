@@ -173,13 +173,13 @@ public class H2Datastore implements Datastore {
         @Override
         public void run() {
             try {
-                long now = System.currentTimeMillis() / 1000L;
+                long now = System.currentTimeMillis();
                 PreparedStatement stmt = conn.prepareStatement("delete from datapoint where metric_id = ? and tstamp < ?");
                 for (Metric metric : getMetrics()) {
                     if (metric.getRetention() > 0) {
                         PersistedMetric pm = (PersistedMetric)metric;
                         stmt.setInt(1, pm.getId());
-                        stmt.setLong(2, now - pm.getRetention());
+                        stmt.setLong(2, now - (pm.getRetention() * 1000L));
                         int rows = stmt.executeUpdate();
                         logger.debug("Deleted {} rows for {}", rows, metric.getName());
                     }

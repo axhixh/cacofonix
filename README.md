@@ -10,7 +10,7 @@ Each new observation consists of the time series (metric) name, timestamp and a 
 ```metric.name timestamp value```
 
  - metric.name is the name of the time series
- - timestamp is Unix timestamp in seconds
+ - timestamp is Unix timestamp in milli-seconds
  - value is a double value
 
 
