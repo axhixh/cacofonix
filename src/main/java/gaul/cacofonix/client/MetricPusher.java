@@ -30,6 +30,6 @@ public class MetricPusher {
     }
     
     public void push(String metric, double value) throws UnsupportedEncodingException, IOException {
-        push(metric, System.currentTimeMillis()/1000, value);
+        push(metric, System.currentTimeMillis(), value);
     }
 }
