@@ -113,7 +113,7 @@ public class H2Datastore implements Datastore {
 
     @Override
     public void save(String metric, DataPoint dp) throws DatastoreException {
-        System.out.println(metric + " @" + dp.getTimestamp() + " -> " + dp.getValue());
+        logger.info("{}, {}, {}", metric, dp.getTimestamp(), dp.getValue());
         try {
             int id = getMetricId(metric);
             if (id == -1) {
