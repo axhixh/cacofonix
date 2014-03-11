@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.Executors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +39,7 @@ public class Reporter {
     public void start() throws IOException {
         server = create(new InetSocketAddress(addr, port), 5);
         server.createContext(METRICS_PATH, new QueryHandler());
-        server.setExecutor(null); // creates a default executor
+        server.setExecutor(Executors.newCachedThreadPool());
         server.start();
     }
 
