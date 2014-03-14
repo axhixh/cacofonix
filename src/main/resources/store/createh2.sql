@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS datapoint (
     value DOUBLE,
     PRIMARY KEY (metric_id, tstamp),
     CONSTRAINT datapoint_metric_fkey FOREIGN KEY (metric_id)
-      REFERENCES metric (id)
+      REFERENCES metric (id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS datapoint_tstamp ON datapoint (tstamp);

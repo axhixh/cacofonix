@@ -61,6 +61,11 @@ public class MemoryDatastore implements Datastore {
     }
     
     @Override
+    public void delete(String metricName) {
+        store.remove(new Metric(metricName, 0, 0));
+    }
+    
+    @Override
     public void close() {
         // do nothing
     }

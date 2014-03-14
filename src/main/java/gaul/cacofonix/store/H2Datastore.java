@@ -158,6 +158,21 @@ public class H2Datastore implements Datastore {
             throw new DatastoreException(msg, err);
         }
     }
+    
+    @Override
+    public void delete(String metricName) throws DatastoreException {
+        logger.info("Deleting metric {}", metricName);
+        try {
+            String query = "delete from metric where metric_name == ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, metricName);
+                stmt.executeUpdate();
+            }
+        } catch (SQLException err) {
+            throw new DatastoreException("Unable to delete metric " + metricName
+                    + ". " + err.getMessage(), err);
+        }
+    }
 
     @Override
     public void close() {
