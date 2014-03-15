@@ -26,10 +26,19 @@ public class MemoryDatastore implements Datastore {
     }
     
     @Override
+    public void createOrUpdate(Metric metric) {
+        if (store.containsKey(metric)) {
+            store.put(metric, store.get(metric));
+        } else {
+            store.put(metric, new ArrayList<DataPoint>());
+        }
+    }
+    
+    @Override
     public void save(String metricName, DataPoint dp) {
         log.info(metricName + '@' + dp.getTimestamp() + 
                         ": " + dp.getValue()); 
-        Metric metric = new Metric(metricName, 0,0);
+        Metric metric = new Metric(metricName, "", 0,0);
         List<DataPoint> points;
         if (store.containsKey(metric)) {
             points = store.get(metric);
@@ -43,7 +52,7 @@ public class MemoryDatastore implements Datastore {
 
     @Override
     public List<DataPoint> query(String metricName, long start, long end) {
-        Metric metric = new Metric(metricName, 0, 0);
+        Metric metric = new Metric(metricName, "", 0, 0);
         if (!store.containsKey(metric)) {
             return Collections.emptyList();
         }
@@ -62,7 +71,7 @@ public class MemoryDatastore implements Datastore {
     
     @Override
     public void delete(String metricName) {
-        store.remove(new Metric(metricName, 0, 0));
+        store.remove(new Metric(metricName, "", 0, 0));
     }
     
     @Override

@@ -9,13 +9,15 @@ import java.util.Objects;
  */
 public class Metric implements Comparable<Metric> {
     private final String name;
+    private final String unit;
     private final int retention;
-    private final int interval;
+    private final int frequeny;
     
-    public Metric(String name, int interval, int retention) {
+    public Metric(String name, String unit, int frequency, int retention) {
         assert(name != null);
         this.name = name;
-        this.interval = interval;
+        this.unit = unit;
+        this.frequeny = frequency;
         this.retention = retention;
     }
     
@@ -23,8 +25,12 @@ public class Metric implements Comparable<Metric> {
         return name;
     }
     
-    public int getInterval() {
-        return interval;
+    public String getUnit() {
+        return unit;
+    }
+    
+    public int getFrequeny() {
+        return frequeny;
     }
     
     public int getRetention() {
@@ -54,6 +60,4 @@ public class Metric implements Comparable<Metric> {
     public int compareTo(Metric o) {
         return this.name.compareToIgnoreCase(o.name);
     }
-    
-    
 }

@@ -88,11 +88,11 @@ public class H2Datastore implements Datastore {
         try {
             try (Statement stmt = conn.createStatement()) {
                 ResultSet result = stmt.executeQuery(
-                        "select id, metric_name, retention, frequency from metric order by metric_name");
+                        "select id, metric_name, unit, frequency, retention from metric order by metric_name");
                 List<Metric> metrics = new LinkedList<>();
                 while (result.next()) {
                     Metric m = new PersistedMetric(result.getInt(1),
-                            result.getString(2), result.getInt(4), result.getInt(3));
+                            result.getString(2), result.getString(3), result.getInt(4), result.getInt(5));
                     metrics.add(m);
                 }
                 return metrics;
@@ -111,6 +111,35 @@ public class H2Datastore implements Datastore {
         }
     }
 
+    @Override
+    public void createOrUpdate(Metric m) throws DatastoreException {
+        try {
+            int id = getMetricId(m.getName());
+            if (id != -1) {
+                String query = "update metric set metric_name = ?, unit = ?, frequency = ?, retention = ? where id = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                    stmt.setString(1, m.getName());
+                    stmt.setString(2, m.getUnit());
+                    stmt.setInt(3, m.getFrequeny());
+                    stmt.setInt(4, m.getRetention());
+                    stmt.setInt(5, id);
+                    stmt.executeUpdate();
+                }
+            } else {
+                String query = "insert into metric (metric_name, unit, frequency, retention) values (?, ?, ?, ?)";
+                try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                    stmt.setString(1, m.getName());
+                    stmt.setString(2, m.getUnit());
+                    stmt.setInt(3, m.getFrequeny());
+                    stmt.setInt(4, m.getRetention());
+                    stmt.executeUpdate();
+                }
+            }
+        } catch (SQLException err) {
+            throw new DatastoreException("Unable to save metric", err);
+        }
+    }
+    
     @Override
     public void save(String metric, DataPoint dp) throws DatastoreException {
         logger.info("{}, {}, {}", metric, dp.getTimestamp(), dp.getValue());
@@ -163,7 +192,7 @@ public class H2Datastore implements Datastore {
     public void delete(String metricName) throws DatastoreException {
         logger.info("Deleting metric {}", metricName);
         try {
-            String query = "delete from metric where metric_name == ?";
+            String query = "delete from metric where metric_name = ?";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, metricName);
                 stmt.executeUpdate();
@@ -208,8 +237,8 @@ public class H2Datastore implements Datastore {
     public class PersistedMetric extends Metric {
         private final int id;
         
-        public PersistedMetric(int id, String name, int interval, int retention) {
-            super(name, interval, retention);
+        public PersistedMetric(int id, String name, String unit, int interval, int retention) {
+            super(name, unit, interval, retention);
             this.id = id;
         }
         

@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS metric (
   metric_name VARCHAR NOT NULL UNIQUE,
   retention INTEGER DEFAULT 3628800,
   frequency INTEGER DEFAULT -1,
+  unit VARCHAR,
   PRIMARY KEY (id)
 );
 

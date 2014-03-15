@@ -6,7 +6,10 @@ import gaul.cacofonix.store.Datastore;
 import gaul.cacofonix.store.DatastoreException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import np.com.axhixh.ember.Ember;
 import np.com.axhixh.ember.Request;
@@ -14,6 +17,7 @@ import np.com.axhixh.ember.Response;
 import np.com.axhixh.ember.Route;
 import static np.com.axhixh.ember.Ember.delete;
 import static np.com.axhixh.ember.Ember.get;
+import static np.com.axhixh.ember.Ember.put;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +57,9 @@ public class Reporter {
                         @Override
                         public void write(OutputStream out) throws IOException {
                             for (Metric metric : metrics) {
-                                String line = metric.getName() + "\n";
+                                String line = String.format("%s\t%s\t%d\n", 
+                                        metric.getName(), metric.getUnit(), 
+                                        metric.getRetention());
                                 out.write(line.getBytes());
                             }
                         }
@@ -112,6 +118,36 @@ public class Reporter {
                     response.error(err);
                 }
             }
+        });
+        
+        put(new Route("/api/metrics/"){
+
+            @Override
+            public void handle(Request request, Response response) {
+                try {
+                    Properties prop = new Properties();
+                    prop.load(new StringReader(request.getContent()));
+
+                    String name = prop.getProperty("name");
+                    if (name == null) {
+                        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+                        response.send("Metric name missing");
+                        return;
+                    }
+                    String unit = prop.getProperty("unit", "");
+                    String sRetention = prop.getProperty("retention", "");
+                    int retention = Integer.parseInt(sRetention);
+                    String sFrequency = prop.getProperty("frequency", "");
+                    int frequency = Integer.parseInt(sFrequency);
+                    
+                    Metric m = new Metric(name, unit, frequency, retention);
+                    store.createOrUpdate(m);       
+                    response.send("Created or updated metric");
+                } catch (IOException | NumberFormatException | DatastoreException err) {
+                    response.error(err);
+                }               
+            }
+            
         });
     }
 
