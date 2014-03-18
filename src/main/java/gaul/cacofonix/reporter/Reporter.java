@@ -1,20 +1,9 @@
 package gaul.cacofonix.reporter;
 
-import gaul.cacofonix.DataPoint;
-import gaul.cacofonix.Metric;
 import gaul.cacofonix.store.Datastore;
-import gaul.cacofonix.store.DatastoreException;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import np.com.axhixh.ember.Ember;
-import np.com.axhixh.ember.Request;
-import np.com.axhixh.ember.Response;
-import np.com.axhixh.ember.Route;
 import static np.com.axhixh.ember.Ember.delete;
 import static np.com.axhixh.ember.Ember.get;
 import static np.com.axhixh.ember.Ember.put;
@@ -28,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class Reporter {
 
     private static final Logger log = LogManager.getLogger("cacofonix.reporter");
-    
+
     private final String addr;
     private final int port;
     private final Datastore store;
@@ -44,111 +33,12 @@ public class Reporter {
         Ember.setPort(port);
         Ember.setExecutor(Executors.newCachedThreadPool());
 
-        get(new Route("/api/metrics/") {
-
-            @Override
-            public void handle(Request rqst, Response rspns) {
-                log.debug("Returning metrics list");
-                try {
-                    final List<Metric> metrics = store.getMetrics();
-                    rspns.addHeader("Access-Control-Allow-Origin", "*");
-                    rspns.stream(new Response.Stream() {
-
-                        @Override
-                        public void write(OutputStream out) throws IOException {
-                            for (Metric metric : metrics) {
-                                String line = String.format("%s\t%s\t%d\n", 
-                                        metric.getName(), metric.getUnit(), 
-                                        metric.getRetention());
-                                out.write(line.getBytes());
-                            }
-                        }
-                    });
-                } catch (DatastoreException err) {
-                    rspns.error(err);
-                }
-            }
-        });
-
-        get(new Route("/api/metrics/:metric") {
-
-            @Override
-            public void handle(Request rqst, Response rspns) {
-                String metricName = rqst.getPathParam(":metric");
-                long start = toNumber(rqst.getQueryParam("start"));
-                if (start < 0) {
-                    start = System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000L;
-                }
-                long end = toNumber(rqst.getQueryParam("end"));
-                if (end < 0) {
-                    end = System.currentTimeMillis();
-                }
-
-                try {
-                    final List<DataPoint> points = store.query(metricName, start, end);
-                    rspns.addHeader("X-Metric-Name", metricName);
-                    rspns.addHeader("Access-Control-Allow-Origin", "*");
-                    rspns.stream(new Response.Stream() {
-
-                        @Override
-                        public void write(OutputStream out) throws IOException {
-                            out.write("time\tvalue\n".getBytes());
-                            for (DataPoint point : points) {
-                                String line = point.getTimestamp() + "\t"
-                                        + point.getValue() + "\n";
-                                out.write(line.getBytes());
-                            }
-                        }
-                    });
-                } catch (DatastoreException err) {
-                    rspns.error(err);
-                }
-            }
-        });
+        get(new GetMetricList(store));
+        get(new GetDataPoints("/api/metrics/:metric", store, new Identity()));
+        get(new GetDataPoints("/api/metrics/:metric/count", store, new CountByInterval()));
         
-        delete(new Route("/api/metrics/:metric") {
-
-            @Override
-            public void handle(Request request, Response response) {
-                String metricName = request.getPathParam(":metric");
-                try {
-                    store.delete(metricName);
-                    response.send(String.format("Metric %s deleted.", metricName));
-                } catch (DatastoreException err) {
-                    response.error(err);
-                }
-            }
-        });
-        
-        put(new Route("/api/metrics/"){
-
-            @Override
-            public void handle(Request request, Response response) {
-                try {
-                    Properties prop = new Properties();
-                    prop.load(new StringReader(request.getContent()));
-
-                    String name = prop.getProperty("name");
-                    if (name == null) {
-                        response.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
-                        response.send("Metric name missing");
-                        return;
-                    }
-                    String unit = prop.getProperty("unit", "");
-                    String sRetention = prop.getProperty("retention", "");
-                    int retention = Integer.parseInt(sRetention);
-                    String sFrequency = prop.getProperty("frequency", "");
-                    int frequency = Integer.parseInt(sFrequency);
-                    
-                    Metric m = new Metric(name, unit, frequency, retention);
-                    store.createOrUpdate(m);       
-                    response.send("Created or updated metric");
-                } catch (IOException | NumberFormatException | DatastoreException err) {
-                    response.error(err);
-                }               
-            }
-            
-        });
+        delete(new DeleteMetric(store));
+        put(new UpdateMetric(store));
     }
 
     public void stop() {
