@@ -37,9 +37,9 @@ class UpdateMetric extends Route {
                 return;
             }
             String unit = prop.getProperty("unit", "");
-            String sRetention = prop.getProperty("retention", "");
+            String sRetention = prop.getProperty("retention", "15552000");
             int retention = Integer.parseInt(sRetention);
-            String sFrequency = prop.getProperty("frequency", "");
+            String sFrequency = prop.getProperty("frequency", "-1");
             int frequency = Integer.parseInt(sFrequency);
 
             Metric m = new Metric(name, unit, frequency, retention);
