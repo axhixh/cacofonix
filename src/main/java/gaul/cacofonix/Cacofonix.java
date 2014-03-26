@@ -27,15 +27,17 @@ public class Cacofonix {
 
         String listenerAddr = config.listenerAddr();
         int listenerPort = config.listenerPort();
+        log.info("Starting listener at {}:{} ", listenerAddr, listenerPort);
         final Listener listener = new Listener(listenerAddr, listenerPort, new MetricHandler(store));
         listener.start();
-        log.info("Started listener at {}:{} ", listenerAddr, listenerPort);
+        
 
         String reporterAddr = config.reporterAddr();
         int reporterPort = config.reporterPort();
+        log.info("Starting reporter at {}:{} ", reporterAddr, reporterPort);
         final Reporter reporter = new Reporter(reporterAddr, reporterPort, store);
         reporter.start();
-        log.info("Started reporter at {}:{} ", reporterAddr, reporterPort);
+        
         
         Runnable hook = new Runnable() {
           @Override
@@ -48,6 +50,7 @@ public class Cacofonix {
         };
         Runtime.getRuntime().addShutdownHook(new Thread(hook, "Shutdown Thread"));
 
+        log.info("Cacofonix running.");
         while (listener.isRunning()) {
             synchronized (listener) {
                 try {
