@@ -36,6 +36,7 @@ public class Reporter {
         get(new GetMetricList(store));
         get(new GetDataPoints("/api/metrics/:metric", store, new Identity()));
         get(new GetDataPoints("/api/metrics/:metric/count", store, new CountByInterval()));
+        get(new GetDataPoints("/api/metrics/:metric/delta", store, new Delta()));
         
         delete(new DeleteMetric(store));
         put(new UpdateMetric(store));
