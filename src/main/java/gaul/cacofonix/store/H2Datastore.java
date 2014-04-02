@@ -13,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -165,16 +164,26 @@ public class H2Datastore implements Datastore {
     @Override
     public List<DataPoint> query(final String metric, long start, long end) throws DatastoreException {
         try {
-            int metricId = getMetricId(metric);
-            if (metricId == -1) {
-                return Collections.emptyList();
+            String query;
+            String metricName;
+            if (metric.endsWith("*")) {
+                query = "select tstamp, value from datapoint " + 
+                        "where metric_id in (select id from metric where metric_name like ? ) " +
+                        "and tstamp >= ? and tstamp <= ? order by tstamp";
+                metricName = metric.replace('*', '%');
+            } else {
+                query = "select tstamp, value from datapoint, metric " +
+                        "where metric_id=id and metric_name=? " +
+                        "and tstamp >= ? and tstamp <= ? order by tstamp";
+                metricName = metric;
             }
-
-            try (Statement stmt = conn.createStatement()) {
-                String query = String.format("select tstamp, value from datapoint " +
-                        "where metric_id = %d and tstamp >= %d and tstamp <= %d " +
-                        "order by tstamp", metricId, start, end);
-                ResultSet result = stmt.executeQuery(query);
+            
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, metricName);
+                stmt.setLong(2, start);
+                stmt.setLong(3, end);
+                
+                ResultSet result = stmt.executeQuery();
                 List<DataPoint> points = new LinkedList<>();
                 while (result.next()) {
                     points.add(new DataPoint(result.getLong(1), result.getDouble(2)));
